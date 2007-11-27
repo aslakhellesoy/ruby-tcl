@@ -1,0 +1,31 @@
+#!/usr/bin/env ruby
+
+require File.join(File.dirname(__FILE__), *%w".. lib tcl")
+
+filename = ARGV.shift || File.join(File.dirname(__FILE__), *%w".. .state.dat")
+interp   = Tcl::Interp.load_from_file(filename) rescue Tcl::Interp.new
+script   = ""
+
+at_exit do
+  # FIXME This is not fired when you call "exit" from Tcl
+  File.open(filename, "w") do |file|
+    file.write(interp.to_tcl)
+  end
+end
+
+print ">> "
+$stdin.each_line do |line|
+  script << line
+  if interp.list_to_array(script)
+    begin
+      result = interp.eval(script)
+      puts result unless result.length.zero?
+    rescue Tcl::Error => e
+      puts e
+    end
+    script = ""
+    print ">> "
+  else
+    print "?> "
+  end
+end
