@@ -60,12 +60,19 @@ static VALUE rb_tcl_interp_list_to_array(VALUE self, VALUE list) {
   Data_Get_Struct(self, tcl_interp_struct, tcl_interp);
   
   Tcl_Obj *string = Tcl_NewStringObj(RSTRING(rb_value_to_s(list))->ptr, -1);
+  Tcl_IncrRefCount(string);
 
   int list_length, i;
   Tcl_Obj **elements;
   
-  if (Tcl_ListObjGetElements(tcl_interp->interp, string, &list_length, &elements) != TCL_OK)
+  if (Tcl_ListObjGetElements(tcl_interp->interp, string, &list_length, &elements) != TCL_OK) {
+    Tcl_DecrRefCount(string);
     return Qnil;
+  }
+  
+  for (i = 0; i < list_length; i++) {
+    Tcl_IncrRefCount(elements[i]);
+  }
   
   VALUE result = rb_ary_new2(list_length);
   
@@ -75,8 +82,11 @@ static VALUE rb_tcl_interp_list_to_array(VALUE self, VALUE list) {
     
     element = Tcl_GetStringFromObj(elements[i], &element_length);
     rb_ary_push(result, element ? rb_tainted_str_new(element, element_length) : rb_str_new2(""));
+    Tcl_DecrRefCount(elements[i]);
   }
   
+  Tcl_DecrRefCount(string);
+
   return result;
 }
 
@@ -87,15 +97,22 @@ static VALUE rb_tcl_interp_array_to_list(VALUE self, VALUE array) {
   int array_length = NUM2INT(rb_funcall(array, rb_intern("length"), 0, 0)), i;
   
   Tcl_Obj *list = Tcl_NewObj();
+  Tcl_IncrRefCount(list);
   
   for (i = 0; i < array_length; i++) {
     VALUE element = rb_ary_entry(array, i);
     Tcl_Obj *string = Tcl_NewStringObj(RSTRING(rb_value_to_s(element))->ptr, -1);
 
+    Tcl_IncrRefCount(string);
     Tcl_ListObjAppendElement(tcl_interp->interp, list, string);
+    Tcl_DecrRefCount(string);
   }
 
-  return rb_tainted_str_new2(Tcl_GetStringFromObj(list, NULL));
+  VALUE result = rb_tainted_str_new2(Tcl_GetStringFromObj(list, NULL));
+  
+  Tcl_DecrRefCount(list);
+  
+  return result;
 }
 
 void Init_tcl() {
