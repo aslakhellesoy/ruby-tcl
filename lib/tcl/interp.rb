@@ -14,6 +14,10 @@ module Tcl
       self
     end
     
+    def interp_receive(method, *args)
+      send("tcl_#{method}", *args)
+    end
+    
     def proc(name)
       Tcl::Proc.new(self, name)
     end

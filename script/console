@@ -21,7 +21,7 @@ $stdin.each_line do |line|
       result = interp.eval(script)
       puts result unless result.length.zero?
     rescue Tcl::Error => e
-      puts e
+      puts "error: #{e}"
     end
     script = ""
     print ">> "
