@@ -1,1 +1,1 @@
-* Tcl::Interp#to_tcl should account for interpreter aliases (see http://wiki.tcl.tk/8766) or namespaces.
+* Tcl::Interp#to_tcl should account for interpreter aliases (see http://wiki.tcl.tk/8766) and namespaces.
