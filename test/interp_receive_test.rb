@@ -63,5 +63,12 @@ class InterpReceiveTest < Test::Unit::TestCase
     assert_equal "0",           @interp.eval("interp_send multiply_by_5 0")
     assert_equal "25",          @interp.eval("interp_send multiply_by_5 5")
   end
+  
+  def test_interp_send_with_custom_interp_receive_method
+    @interp = InterpWithCustomReceiveMethod.new
+    assert_raises(Tcl::Error) { @interp.eval("interp_send") }
+    assert_equal "foo",         @interp.eval("interp_send foo")
+    assert_equal "foo bar",     @interp.eval("interp_send foo bar")
+  end
 end
 
