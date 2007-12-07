@@ -17,7 +17,11 @@ module Tcl
     def interp_receive(method, *args)
       send("tcl_#{method}", *args)
     end
-    
+  
+    def expose(name)
+      _!(:interp, :alias, nil, name, nil, :interp_send, name)
+    end
+
     def proc(name)
       Tcl::Proc.new(self, name)
     end

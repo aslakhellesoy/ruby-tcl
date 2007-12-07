@@ -28,6 +28,17 @@ class InterpWithCustomReceiveMethod < Tcl::Interp
   end
 end
 
+class InterpWithExposedMethods < Tcl::Interp
+  def initialize
+    super
+    expose :hello
+  end
+  
+  def tcl_hello(who)
+    "hello, #{who}"
+  end
+end
+
 class InterpReceiveTest < Test::Unit::TestCase
   def setup
     @interp = InterpWithDefaultReceiveMethod.new
@@ -69,6 +80,12 @@ class InterpReceiveTest < Test::Unit::TestCase
     assert_raises(Tcl::Error) { @interp.eval("interp_send") }
     assert_equal "foo",         @interp.eval("interp_send foo")
     assert_equal "foo bar",     @interp.eval("interp_send foo bar")
+  end
+  
+  def test_interp_expose
+    @interp = InterpWithExposedMethods.new
+    assert_equal "hello, Sam",  @interp.eval("interp_send hello Sam")
+    assert_equal "hello, Sam",  @interp.eval("hello Sam")
   end
 end
 

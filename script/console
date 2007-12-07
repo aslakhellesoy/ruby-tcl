@@ -11,11 +11,6 @@ class ConsoleInterp < Tcl::Interp
   def tcl_ruby_eval(script)
     Kernel.eval(script)
   end
-  
-  protected
-    def expose(name)
-      _!(:interp, :alias, nil, name, nil, :interp_send, name)
-    end
 end
 
 filename = ARGV.shift || File.join(File.dirname(__FILE__), *%w".. .state.dat")
