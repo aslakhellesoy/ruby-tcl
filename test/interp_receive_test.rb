@@ -53,6 +53,10 @@ class InterpReceiveTest < Test::Unit::TestCase
     assert_raises(Tcl::Error) { @interp.eval("interp_send") }
   end
   
+  def test_interp_send_returns_tcl_ok
+    assert_equal "0",           @interp.eval("catch {interp_send no_arguments}")
+  end
+  
   def test_interp_send_to_method_with_no_arguments
     assert_equal "hello",       @interp.eval("interp_send no_arguments")
     assert_raises(Tcl::Error) { @interp.eval("interp_send no_arguments foo") }

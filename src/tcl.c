@@ -19,7 +19,7 @@ static VALUE rb_tcl_interp_send_begin(VALUE args) {
   VALUE obj = rb_ary_entry(args, 0);
   VALUE interp_receive_args = rb_ary_entry(args, 1);
   
-  VALUE result = rb_funcall2(obj, rb_intern("interp_receive"), RARRAY_LEN(interp_receive_args), RARRAY_PTR(interp_receive_args));
+  VALUE result = rb_funcall2(obj, rb_intern("interp_receive"), RARRAY(interp_receive_args)->len, RARRAY(interp_receive_args)->ptr);
   
   tcl_interp_struct *tcl_interp;
   Data_Get_Struct(obj, tcl_interp_struct, tcl_interp);
@@ -56,7 +56,7 @@ static int rb_tcl_interp_send(ClientData clientData, Tcl_Interp *interp, int obj
   VALUE args = rb_ary_new3(2, (VALUE) clientData, interp_receive_args);
   
   if (rb_rescue2(rb_tcl_interp_send_begin, args, rb_tcl_interp_send_rescue, args, rb_eException) == Qtrue) {
-    return TCL_RETURN;
+    return TCL_OK;
   } else {
     return TCL_ERROR;
   }
@@ -142,7 +142,7 @@ static VALUE rb_tcl_interp_array_to_list(VALUE self, VALUE array) {
   tcl_interp_struct *tcl_interp;
   Data_Get_Struct(self, tcl_interp_struct, tcl_interp);
 
-  int array_length = NUM2INT(rb_funcall(array, rb_intern("length"), 0, 0)), i;
+  int array_length = RARRAY(array)->len, i;
   
   Tcl_Obj *list = Tcl_NewObj();
   Tcl_IncrRefCount(list);
