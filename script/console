@@ -2,12 +2,32 @@
 
 require File.join(File.dirname(__FILE__), *%w".. lib tcl")
 
+class ConsoleInterp < Tcl::Interp
+  def initialize
+    super
+    expose :exit
+    expose :ruby_eval
+  end
+  
+  def tcl_ruby_eval(script)
+    Kernel.eval(script)
+  end
+  
+  def tcl_exit
+    exit
+  end
+  
+  protected
+    def expose(name)
+      _!(:interp, :alias, nil, name, nil, :interp_send, name)
+    end
+end
+
 filename = ARGV.shift || File.join(File.dirname(__FILE__), *%w".. .state.dat")
-interp   = Tcl::Interp.load_from_file(filename) rescue Tcl::Interp.new
+interp   = ConsoleInterp.load_from_file(filename) rescue ConsoleInterp.new
 script   = ""
 
 at_exit do
-  # FIXME This is not fired when you call "exit" from Tcl
   File.open(filename, "w") do |file|
     file.write(interp.to_tcl)
   end
