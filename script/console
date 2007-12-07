@@ -5,16 +5,11 @@ require File.join(File.dirname(__FILE__), *%w".. lib tcl")
 class ConsoleInterp < Tcl::Interp
   def initialize
     super
-    expose :exit
     expose :ruby_eval
   end
   
   def tcl_ruby_eval(script)
     Kernel.eval(script)
-  end
-  
-  def tcl_exit
-    exit
   end
   
   protected

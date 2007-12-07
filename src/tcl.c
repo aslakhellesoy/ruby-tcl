@@ -55,7 +55,7 @@ static int rb_tcl_interp_send(ClientData clientData, Tcl_Interp *interp, int obj
   
   VALUE args = rb_ary_new3(2, (VALUE) clientData, interp_receive_args);
   
-  if (rb_rescue(rb_tcl_interp_send_begin, args, rb_tcl_interp_send_rescue, args) == Qtrue) {
+  if (rb_rescue2(rb_tcl_interp_send_begin, args, rb_tcl_interp_send_rescue, args, rb_eException) == Qtrue) {
     return TCL_RETURN;
   } else {
     return TCL_ERROR;
