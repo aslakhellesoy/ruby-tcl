@@ -6,10 +6,15 @@ class ConsoleInterp < Tcl::Interp
   def initialize
     super
     expose :ruby_eval
+    expose :exit
   end
   
   def tcl_ruby_eval(script)
     Kernel.eval(script)
+  end
+  
+  def tcl_exit(code = 0)
+    exit(code.to_i)
   end
 end
 

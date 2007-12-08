@@ -3,6 +3,7 @@
 
 typedef struct {
   Tcl_Interp *interp;
+  VALUE exit_exception;
 } tcl_interp_struct;
 
 static VALUE rb_value_to_s(VALUE value) {
@@ -38,6 +39,10 @@ static VALUE rb_tcl_interp_send_rescue(VALUE args, VALUE error_info) {
   char *tcl_result = strdup(RSTRING(rb_value_to_s(error_info))->ptr);
   Tcl_SetResult(tcl_interp->interp, tcl_result, (Tcl_FreeProc *)free);
 
+  if (rb_obj_is_kind_of(error_info, rb_eSystemExit)) {
+    tcl_interp->exit_exception = error_info;
+  }
+
   return Qfalse;
 }
 
@@ -67,6 +72,7 @@ static VALUE rb_tcl_interp_allocate(VALUE klass) {
   VALUE obj = Data_Make_Struct(klass, tcl_interp_struct, NULL, rb_tcl_interp_destroy, tcl_interp);
   
   tcl_interp->interp = Tcl_CreateInterp();
+  tcl_interp->exit_exception = Qnil;
   Tcl_Init(tcl_interp->interp);
   Tcl_Preserve(tcl_interp->interp);
   
@@ -130,7 +136,11 @@ static VALUE rb_tcl_interp_eval(VALUE self, VALUE script) {
     case TCL_OK:
       return rb_tainted_str_new2(tcl_interp->interp->result);
     case TCL_ERROR:
-      rb_raise(error_class, "%s", tcl_interp->interp->result);
+      if (NIL_P(tcl_interp->exit_exception)) {
+        rb_raise(error_class, "%s", tcl_interp->interp->result);
+      } else {
+        rb_exit(NUM2INT(rb_iv_get(tcl_interp->exit_exception, "status")));
+      }
     default:
       return Qnil;
   }

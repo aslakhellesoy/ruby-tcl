@@ -39,6 +39,12 @@ class InterpWithExposedMethods < Tcl::Interp
   end
 end
 
+class InterpWithExitMethod < Tcl::Interp  
+  def tcl_exit
+    exit
+  end
+end
+
 class InterpReceiveTest < Test::Unit::TestCase
   def setup
     @interp = InterpWithDefaultReceiveMethod.new
@@ -90,6 +96,11 @@ class InterpReceiveTest < Test::Unit::TestCase
     @interp = InterpWithExposedMethods.new
     assert_equal "hello, Sam",  @interp.eval("interp_send hello Sam")
     assert_equal "hello, Sam",  @interp.eval("hello Sam")
+  end
+  
+  def test_interp_send_does_not_convert_system_exit_into_tcl_error
+    @interp = InterpWithExitMethod.new
+    assert_raises(SystemExit) { @interp.eval("interp_send exit") }
   end
 end
 
