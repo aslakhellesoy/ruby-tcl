@@ -27,6 +27,12 @@ class InterpTest < Test::Unit::TestCase
     assert_raises(Tcl::Error)     { @interp.eval("error") }
   end
   
+  def test_eval_with_timeout_argument
+    if defined?(Tcl::Timeout)
+      assert_raises(Tcl::Timeout) { @interp.eval("while 1 {}", 100) }
+    end
+  end
+  
   def test_array_to_list
     assert_equal "",                @interp.array_to_list([])
     assert_equal "{}",              @interp.array_to_list([nil])

@@ -86,14 +86,46 @@ static VALUE rb_tcl_safe_interp_allocate(VALUE klass) {
   return obj;
 }
 
+#ifdef TCL_LIMIT_TIME
+static VALUE rb_tcl_interp_eval(VALUE self, VALUE args) {
+  VALUE script = rb_ary_entry(args, 0);
+
+  int timeout = 0;
+  if (RARRAY(args)->len == 2) {
+    timeout = NUM2INT(rb_ary_entry(args, 1));
+  }
+#else
 static VALUE rb_tcl_interp_eval(VALUE self, VALUE script) {
-  VALUE error_class = rb_const_get(rb_const_get(rb_cObject, rb_intern("Tcl")), rb_intern("Error"));
+#endif
 
   tcl_interp_struct *tcl_interp;
   Data_Get_Struct(self, tcl_interp_struct, tcl_interp);
 
-  int result = Tcl_Eval(tcl_interp->interp, RSTRING(rb_value_to_s(script))->ptr);
+#ifdef TCL_LIMIT_TIME
+  if (timeout > 0) {
+    Tcl_Time timeout_time;
+    Tcl_GetTime(&timeout_time);
+    timeout_time.sec += (long) timeout / 1000;
+    timeout_time.usec += (long) (timeout % 1000) * 1000;
 
+    Tcl_LimitSetTime(tcl_interp->interp, &timeout_time);
+    Tcl_LimitTypeSet(tcl_interp->interp, TCL_LIMIT_TIME);
+  }
+#endif
+
+  int result = Tcl_Eval(tcl_interp->interp, RSTRING(rb_value_to_s(script))->ptr);
+  
+  VALUE error_class = rb_const_get(rb_const_get(rb_cObject, rb_intern("Tcl")), rb_intern("Error"));
+
+#ifdef TCL_LIMIT_TIME
+  if (timeout > 0) {
+    if (Tcl_LimitTypeExceeded(tcl_interp->interp, TCL_LIMIT_TIME))
+      error_class = rb_const_get(rb_const_get(rb_cObject, rb_intern("Tcl")), rb_intern("Timeout"));
+      
+    Tcl_LimitTypeReset(tcl_interp->interp, TCL_LIMIT_TIME);
+  }
+#endif
+  
   switch (result) {
     case TCL_OK:
       return rb_tainted_str_new2(tcl_interp->interp->result);
@@ -168,10 +200,16 @@ void Init_tcl() {
   VALUE interp_class = rb_define_class_under(tcl_module, "Interp", rb_cObject);
   VALUE safe_interp_class = rb_define_class_under(tcl_module, "SafeInterp", interp_class);
   VALUE error_class = rb_define_class_under(tcl_module, "Error", rb_eStandardError);
-  
+
   rb_define_alloc_func(interp_class, rb_tcl_interp_allocate);
   rb_define_alloc_func(safe_interp_class, rb_tcl_safe_interp_allocate);
-  rb_define_method(interp_class, "eval", rb_tcl_interp_eval, 1);
   rb_define_method(interp_class, "list_to_array", rb_tcl_interp_list_to_array, 1);
   rb_define_method(interp_class, "array_to_list", rb_tcl_interp_array_to_list, 1);
+
+#ifdef TCL_LIMIT_TIME
+  VALUE timeout_class = rb_define_class_under(tcl_module, "Timeout", error_class);
+  rb_define_method(interp_class, "eval", rb_tcl_interp_eval, -2);
+#else
+  rb_define_method(interp_class, "eval", rb_tcl_interp_eval, 1);
+#endif
 }
