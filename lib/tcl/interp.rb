@@ -41,7 +41,8 @@ module Tcl
     def to_tcl
       %w( var proc ).inject([]) do |lines, type|
         send("#{type}s").sort.each do |name|
-          lines << send(type, name).to_tcl
+          object = send(type, name)
+          lines << object.to_tcl unless object.builtin?
         end
         lines
       end.join("\n")

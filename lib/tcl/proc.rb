@@ -1,5 +1,10 @@
 module Tcl
   class Proc
+    BUILTINS = %w(
+      auto_execok auto_import auto_load auto_load_index 
+      auto_qualify tclLog unknown
+    )
+
     include InterpHelper
 
     attr_reader :name
@@ -35,6 +40,11 @@ module Tcl
     
     def to_tcl
       _(:proc, name, _(*arguments), body)
+    end
+    
+    def builtin?
+      # TODO should also check to see if the definition has changed
+      BUILTINS.include?(name) 
     end
   end
 end

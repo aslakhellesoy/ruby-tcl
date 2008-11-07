@@ -91,7 +91,6 @@ class InterpTest < Test::Unit::TestCase
   end
   
   def test_to_tcl
-    @interp.clear!
     @interp.eval IO.read(path_to_fixture("test.tcl"))
     assert_equal <<-EOF.chomp, @interp.to_tcl
 set a 0
@@ -101,7 +100,7 @@ proc d {a {b 0}} {return $b}
 proc e {} {}
     EOF
   end
-
+  
   def test_interp_helper_method_missing_super_passthrough
     assert_raises(NoMethodError) { @interp.nonexistent }
   end

@@ -1,5 +1,10 @@
 module Tcl
   class Var
+    BUILTINS = %w(
+      auto_index auto_oldpath auto_path env errorCode errorInfo
+      tcl_libPath tcl_library tcl_patchLevel tcl_pkgPath tcl_platform tcl_version
+    )
+    
     include InterpHelper
     
     class << self
@@ -20,6 +25,10 @@ module Tcl
       @interp = interp
       @name = name.to_s
       to_tcl
+    end
+    
+    def builtin?
+      BUILTINS.include?(name)
     end
   end
   
