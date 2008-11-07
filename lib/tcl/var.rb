@@ -9,12 +9,12 @@ module Tcl
     
     class << self
       def find(interp, name)
-        StringVar.new(interp, name)
-      rescue Tcl::Error => e
-        if e.message["variable is array"]
+        if interp._!(:array, :exists, name) == "1"
           ArrayVar.new(interp, name)
+        elsif interp._!(:info, :exists, name) == "1"
+          StringVar.new(interp, name)
         else
-          raise
+          raise Tcl::Error, "can't read \"#{name}\": no such variable"
         end
       end
     end
