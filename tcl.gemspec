@@ -20,18 +20,23 @@ Gem::Specification.new do |s|
   ]
   s.files = [
     ".gitignore",
+     "LICENSE",
+     "README.rdoc",
      "Rakefile",
      "TODO",
      "VERSION",
      "ext/tcl_ruby/extconf.rb",
      "ext/tcl_ruby/tcl_ruby.c",
+     "lib/.gitignore",
      "lib/tcl.rb",
      "lib/tcl/interp.rb",
      "lib/tcl/interp_helper.rb",
      "lib/tcl/proc.rb",
      "lib/tcl/var.rb",
      "script/console",
+     "tcl.gemspec",
      "test/fixtures/test.tcl",
+     "test/helper.rb",
      "test/interp_receive_test.rb",
      "test/interp_test.rb",
      "test/proc_test.rb",
@@ -49,7 +54,6 @@ Gem::Specification.new do |s|
      "test/interp_test.rb",
      "test/proc_test.rb",
      "test/test_helper.rb",
-     "test/test_tcl.rb",
      "test/var_test.rb"
   ]
 
