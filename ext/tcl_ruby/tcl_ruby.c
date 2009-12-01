@@ -205,7 +205,7 @@ static VALUE rb_tcl_interp_array_to_list(VALUE self, VALUE array) {
   return result;
 }
 
-void Init_tcl() {
+void Init_tcl_ruby() {
   VALUE tcl_module = rb_define_module("Tcl");
   VALUE interp_class = rb_define_class_under(tcl_module, "Interp", rb_cObject);
   VALUE safe_interp_class = rb_define_class_under(tcl_module, "SafeInterp", interp_class);

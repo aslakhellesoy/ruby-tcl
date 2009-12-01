@@ -5,4 +5,4 @@ require "mkmf"
 
 dir_config("tcl")
 have_library("tcl") unless have_library("tcl8.5")
-create_makefile("tcl")
+create_makefile("tcl_ruby")

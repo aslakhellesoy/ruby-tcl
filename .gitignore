@@ -1,6 +1,1 @@
-src/
-!src/*.rb
-!src/*.c
-.*
-!.git*
-
+pkg
